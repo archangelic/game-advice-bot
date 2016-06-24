@@ -14,10 +14,9 @@ tw_auth = tweepy.OAuthHandler(tw_con_key, tw_con_secret)
 tw_auth.set_access_token(tw_key, tw_secret)
 tw = tweepy.API(tw_auth)
 
-br = mechanicalsoup.Browser()
-
 
 def build_corpus():
+    br = mechanicalsoup.Browser(soup_config={'markup_type': 'lxml'})
     response = br.get('http://www.gamefaqs.com/games/rankings')
 
     systems = []
@@ -66,8 +65,8 @@ def build_corpus():
             cleanText = ''.join([i if ord(i) < 128 else ' ' for i in guideText])
             cleanGuides.append(cleanText)
 
-    for i in cleanGuides:
-        with open("corpus.txt", "a") as myfile:
+    with open("corpus.txt", "a") as myfile:
+        for i in cleanGuides:
             myfile.write(i)
 
 
