@@ -1,9 +1,11 @@
-import markovify
-import mechanicalsoup
+#!/usr/bin/env python3
 import os
-import tweepy
 
 from configobj import ConfigObj
+import markovify
+import mechanicalsoup
+import nltk
+import tweepy
 
 config = ConfigObj("twitter.conf")
 tw_con_key = config['consumer_key']
@@ -13,6 +15,17 @@ tw_secret = config['secret']
 tw_auth = tweepy.OAuthHandler(tw_con_key, tw_con_secret)
 tw_auth.set_access_token(tw_key, tw_secret)
 tw = tweepy.API(tw_auth)
+
+
+class POSifiedText(markovify.Text):
+    def word_split(self, sentence):
+        words = re.split(self.word_split_pattern, sentence)
+        words = [ "::".join(tag) for tag in nltk.pos_tag(words) ]
+        return words
+
+    def word_join(self, words):
+        sentence = " ".join(word.split("::")[0] for word in words)
+        return sentence
 
 
 def build_corpus():
@@ -74,7 +87,7 @@ def post(count=1):
     with open("corpus.txt", "r") as f:
         text = f.read()
 
-    markovText = markovify.Text(text)
+    markovText = POSifiedText(text)
 
     if count == 1:
         tweet = markovText.make_short_sentence(140)
